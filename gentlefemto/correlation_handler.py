@@ -23,9 +23,16 @@ class CorrelationHandler:
 
     """
 
-    def __init__(self, same_event=None, mixed_event=None) -> None:
-        self.same_event = same_event
-        self.mixed_event = mixed_event
+    def __init__(self, name, same_event=None, mixed_event=None) -> None:
+        self.name = name
+        if same_event:
+            self.set_same_event(same_event)
+        else:
+            self.same_event = None
+        if mixed_event:
+            self.set_mixed_event(mixed_event)
+        else:
+            self.mixed_event = None
         self.correlation_function = None
 
     def self_normalise(self) -> None:
@@ -43,17 +50,67 @@ class CorrelationHandler:
             logging.info('Mixed-event not set.')
 
     def set_same_event(self, same_event=None) -> None:
-        self.same_event = same_event
+        self.same_event = same_event.Clone(f'hSame_{self.name}')
 
     def set_mixed_event(self, mixed_event=None) -> None:
-        self.mixed_event = mixed_event
+        self.mixed_event = mixed_event.Clone(f'hMixed_{self.name}')
+
+    def move_to_MeV(self):
+        if self.same_event is None or self.mixed_event is None:
+            logging.error(
+                'Set same-event end/or mixed-event distribution first')
+        else:
+            if self.correlation_function:
+                logging.info(
+                    'After the change of units evaluate the CF again.')
+            nbins = self.same_event.GetNbinsX()
+            low_edge = self.same_event.GetBinLowEdge(1)
+            up_edge = self.same_event.GetBinLowEdge(nbins+1)
+            self.same_event.SetName('hSame_old')
+            self.mixed_event.SetName('hMixed_old')
+            hSame_new = TH1F(
+                f'hSame_{self.name}', r';k* (MeV/#it{c}); Entries', nbins, low_edge*1000, up_edge*1000)
+            hMixed_new = TH1F(
+                f'hMixed_{self.name}', r';k* (MeV/#it{c}); Entries', nbins, low_edge*1000, up_edge*1000)
+            for i in range(0, nbins+2):
+                hSame_new.SetBinContent(i, self.same_event.GetBinContent(i))
+                hSame_new.SetBinError(i, self.same_event.GetBinError(i))
+                hMixed_new.SetBinContent(i, self.mixed_event.GetBinContent(i))
+                hMixed_new.SetBinError(i, self.mixed_event.GetBinError(i))
+            self.same_event = hSame_new
+            self.mixed_event = hMixed_new
+    
+    def move_to_GeV(self):
+        if self.same_event is None or self.mixed_event is None:
+            logging.error(
+                'Set same-event end/or mixed-event distribution first')
+        else:
+            if self.correlation_function:
+                logging.info(
+                    'After the change of units evaluate the CF again.')
+            nbins = self.same_event.GetNbinsX()
+            low_edge = self.same_event.GetBinLowEdge(1)
+            up_edge = self.same_event.GetBinLowEdge(nbins+1)
+            self.same_event.SetName('hSame_old')
+            self.same_event.SetName('hMixed_old')
+            hSame_new = TH1F(
+                f'hSame_{self.name}', r';k* (GeV/#it{c}); Entries', nbins, low_edge/1000, up_edge/1000)
+            hMixed_new = TH1F(
+                f'hMixed_{self.name}', r';k* (GeV/#it{c}); Entries', nbins, low_edge/1000, up_edge/1000)
+            for i in range(0, nbins+2):
+                hSame_new.SetBinContent(i, self.same_event.GetBinContent(i))
+                hSame_new.SetBinError(i, self.same_event.GetBinError(i))
+                hMixed_new.SetBinContent(i, self.mixed_event.GetBinContent(i))
+                hMixed_new.SetBinError(i, self.mixed_event.GetBinError(i))
+            self.same_event = hSame_new
+            self.mixed_event = hMixed_new
 
     def rebin(self, n_rebin=2) -> None:
         self.same_event.Rebin(n_rebin)
         self.mixed_event.Rebin(n_rebin)
 
-    def make_correlation_function(self, name = 'hCF'):
-        self.correlation_function = self.same_event.Clone(name)
+    def make_correlation_function(self):
+        self.correlation_function = self.same_event.Clone(f'hCF_{self.name}')
         self.correlation_function.Reset()
         self.correlation_function.GetYaxis().SetTitle('C(k*)')
         for i in range(1, self.correlation_function.GetNbinsX()):
