@@ -1,0 +1,8 @@
+  
+# Byte-compiled / optimized 
+
+__pycache__/
+
+# Distribution / packaging
+build/
+*.egg-info/
