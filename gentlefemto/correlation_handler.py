@@ -19,7 +19,7 @@ class CorrelationHandler:
 
     same_event = same-event k* distribution (TH1F)
 
-    mixed_event = same-event k* distribution (TH1F)
+    mixed_event = mixed-event k* distribution (TH1F)
 
     """
 
