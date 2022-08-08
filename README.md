@@ -1,8 +1,5 @@
-
-
-
 # pyGentleFemto 
-<img src="LogoGentleFemto.png" alt="drawing" align="left" style="width:100px;"/>
+<img src="LogoGentleFemtoOrange.png" alt="drawing" align="left" style="width:100px;"/>
 
 A simple python routine to compute the correlation function, provided the histograms of same-event and mixed-event $k^{*}$ distributions.
 
